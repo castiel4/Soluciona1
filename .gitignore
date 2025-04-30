@@ -1,15 +1,19 @@
-# compiled output
-/dist
-/node_modules
+# Arquivos de ambiente
+.env
+.env.local
+.env.*.local
+
+# Diretórios de build
+dist/
+build/
+
+# Dependências
+node_modules/
 
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
-pnpm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
 
 # OS
 .DS_Store
