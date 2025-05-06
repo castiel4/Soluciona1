@@ -40,13 +40,4 @@ export class UsuariosController {
   async listarPorTipo(@Param('tipo') tipo: TipoUsuario) {
     return this.usuariosService.listarPorTipo(tipo);
   }
-
-  @UseGuards(JwtAuthGuard)
-  @Post(':id/avaliacao')
-  async atualizarAvaliacao(
-    @Param('id') id: string,
-    @Body('avaliacao') avaliacao: number
-  ) {
-    return this.usuariosService.atualizarAvaliacao(parseInt(id), avaliacao);
-  }
 } 

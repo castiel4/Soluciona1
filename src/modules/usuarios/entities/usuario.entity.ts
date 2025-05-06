@@ -26,23 +26,17 @@ export class Usuario {
   })
   tipo: TipoUsuario;
 
-  @Column({ length: 255, nullable: true, name: 'foto_perfil' })
-  fotoPerfil: string;
-
   @Column({ length: 20, nullable: true })
   telefone: string;
 
-  @Column({ length: 255, nullable: true })
+  @Column({ length: 200, nullable: true })
   endereco: string;
 
   @Column({ type: 'text', nullable: true })
   biografia: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true, name: 'avaliacao_media' })
-  avaliacaoMedia: number;
-
-  @Column({ type: 'int', default: 0, name: 'total_avaliacoes' })
-  totalAvaliacoes: number;
+  @Column({ length: 255, nullable: true, name: 'foto_perfil' })
+  fotoPerfil: string;
 
   @CreateDateColumn({ name: 'data_criacao' })
   dataCriacao: Date;
