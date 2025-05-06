@@ -5,6 +5,8 @@ import { Usuario, TipoUsuario } from './entities/usuario.entity';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import * as bcrypt from 'bcrypt';
+import { CreateUserDto } from './dto/create-user.dto';
+import { EnderecoDto } from './dto/endereco.dto';
 
 @Injectable()
 export class UsuariosService {
@@ -49,32 +51,69 @@ export class UsuariosService {
     return `(${ddd}) ${numero}`;
   }
 
-  async criarUsuario(createUsuarioDto: CreateUsuarioDto): Promise<Usuario> {
-    // Verifica se já existe um usuário com o mesmo email
+  private formatarEndereco(endereco: string): string {
+    if (!endereco) return null;
+
+    // Remove espaços extras e normaliza vírgulas
+    let enderecoFormatado = endereco
+      .trim()
+      .replace(/\s+/g, ' ')
+      .replace(/\s*,\s*/g, ', ');
+
+    // Garante que cada parte do endereço começa com letra maiúscula
+    enderecoFormatado = enderecoFormatado
+      .split(', ')
+      .map(parte => parte.charAt(0).toUpperCase() + parte.slice(1))
+      .join(', ');
+
+    return enderecoFormatado;
+  }
+
+  private formatarEnderecoObjeto(endereco: EnderecoDto): string {
+    if (!endereco) return null;
+    // Formata o endereço no padrão: "logradouro, numero, complemento, bairro, cidade - estado, CEP"
+    let partes = [
+      endereco.logradouro,
+      endereco.numero
+    ];
+    if (endereco.complemento) partes.push(endereco.complemento);
+    partes.push(endereco.bairro);
+    partes.push(`${endereco.cidade} - ${endereco.estado}`);
+    partes.push(endereco.cep);
+    return partes.filter(Boolean).join(', ');
+  }
+
+  async criarUsuario(createUserDto: CreateUserDto): Promise<Usuario> {
     const usuarioExistente = await this.usuariosRepository.findOne({
-      where: { email: createUsuarioDto.email }
+      where: { email: createUserDto.email }
     });
 
     if (usuarioExistente) {
       throw new ConflictException('Já existe um usuário cadastrado com este email');
     }
 
-    const senhaCriptografada = await bcrypt.hash(createUsuarioDto.senha, 10);
-    
-    // Formata o telefone se fornecido
-    if (createUsuarioDto.telefone) {
+    const senhaCriptografada = await bcrypt.hash(createUserDto.senha, 10);
+
+    if (createUserDto.telefone) {
       try {
-        createUsuarioDto.telefone = this.formatarTelefone(createUsuarioDto.telefone);
+        createUserDto.telefone = this.formatarTelefone(createUserDto.telefone);
       } catch (error) {
         throw new BadRequestException(error.message);
       }
     }
-    
+
+    // Novo: aceita objeto endereco e converte para string
+    let enderecoFormatado = null;
+    if (createUserDto.endereco) {
+      enderecoFormatado = this.formatarEnderecoObjeto(createUserDto.endereco);
+    }
+
     const usuario = this.usuariosRepository.create({
-      ...createUsuarioDto,
+      ...createUserDto,
       senha: senhaCriptografada,
+      endereco: enderecoFormatado,
     });
-    
+
     return this.usuariosRepository.save(usuario);
   }
 
@@ -101,13 +140,16 @@ export class UsuariosService {
       updateUsuarioDto.senha = await bcrypt.hash(updateUsuarioDto.senha, 10);
     }
 
-    // Formata o telefone se fornecido
     if (updateUsuarioDto.telefone) {
       try {
         updateUsuarioDto.telefone = this.formatarTelefone(updateUsuarioDto.telefone);
       } catch (error) {
         throw new BadRequestException(error.message);
       }
+    }
+
+    if (updateUsuarioDto.endereco) {
+      updateUsuarioDto.endereco = this.formatarEndereco(updateUsuarioDto.endereco);
     }
     
     Object.assign(usuario, updateUsuarioDto);

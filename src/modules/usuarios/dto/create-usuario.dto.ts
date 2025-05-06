@@ -34,6 +34,11 @@ export class CreateUsuarioDto {
 
   @IsString()
   @IsOptional()
+  @MinLength(10)
+  @MaxLength(200)
+  @Matches(/^[A-zÀ-ú0-9\s,.-]+$/, {
+    message: 'O endereço deve conter apenas letras, números, vírgulas, pontos, hífens e espaços'
+  })
   endereco?: string;
 
   @IsString()
