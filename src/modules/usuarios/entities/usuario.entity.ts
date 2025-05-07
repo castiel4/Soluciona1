@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { Service } from '../../services/entities/service.entity';
 
 export enum TipoUsuario {
   PRESTADOR = 'prestador',
@@ -43,4 +44,7 @@ export class Usuario {
 
   @UpdateDateColumn({ name: 'data_atualizacao' })
   dataAtualizacao: Date;
+
+  @OneToMany(() => Service, service => service.usuario)
+  servicos: Service[];
 } 
