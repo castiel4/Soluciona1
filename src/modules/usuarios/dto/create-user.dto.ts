@@ -1,12 +1,7 @@
-import { IsString, IsEmail, IsEnum, IsNotEmpty, ValidateNested } from 'class-validator';
+import { IsString, IsEmail, IsNotEmpty, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { EnderecoDto } from './endereco.dto';
-
-export enum TipoUsuario {
-  SOLICITANTE = 'solicitante',
-  PRESTADOR = 'prestador',
-}
 
 export class CreateUserDto {
   @ApiProperty({
@@ -50,13 +45,12 @@ export class CreateUserDto {
   biografia: string;
 
   @ApiProperty({
-    description: 'Tipo do usuário',
-    enum: TipoUsuario,
-    example: TipoUsuario.PRESTADOR
+    description: 'Tipo do usuário (aceita variações como "prestador", "PRESTADOR", "prestadores", etc)',
+    example: 'prestador'
   })
-  @IsEnum(TipoUsuario, { message: 'Tipo de usuário inválido. Use "prestador" ou "solicitante".' })
+  @IsString()
   @IsNotEmpty({ message: 'O tipo de usuário é obrigatório' })
-  tipo: TipoUsuario;
+  tipo: string;
 
   @ApiProperty({
     description: 'Endereço do usuário',

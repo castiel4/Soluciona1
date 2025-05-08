@@ -39,6 +39,12 @@ export class Usuario {
   @Column({ length: 255, nullable: true, name: 'foto_perfil' })
   fotoPerfil: string;
 
+  @Column({ type: 'decimal', precision: 3, scale: 2, nullable: true, name: 'avaliacao_media' })
+  avaliacaoMedia: number;
+
+  @Column({ type: 'integer', default: 0, name: 'total_avaliacoes' })
+  totalAvaliacoes: number;
+
   @CreateDateColumn({ name: 'data_criacao' })
   dataCriacao: Date;
 

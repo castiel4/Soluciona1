@@ -7,6 +7,7 @@ import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { EnderecoDto } from './dto/endereco.dto';
+import { normalizeTipoUsuario, formatTipoUsuarioForDisplay } from './helpers/normalize-tipo-usuario.helper';
 
 @Injectable()
 export class UsuariosService {
@@ -102,6 +103,14 @@ export class UsuariosService {
       }
     }
 
+    // Normaliza o tipo de usuário
+    let tipoNormalizado: TipoUsuario;
+    try {
+      tipoNormalizado = normalizeTipoUsuario(createUserDto.tipo);
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+
     // Novo: aceita objeto endereco e converte para string
     let enderecoFormatado = null;
     if (createUserDto.endereco) {
@@ -109,9 +118,13 @@ export class UsuariosService {
     }
 
     const usuario = this.usuariosRepository.create({
-      ...createUserDto,
+      nome: createUserDto.nome,
+      email: createUserDto.email,
       senha: senhaCriptografada,
+      tipo: tipoNormalizado,
+      telefone: createUserDto.telefone,
       endereco: enderecoFormatado,
+      biografia: createUserDto.biografia
     });
 
     return this.usuariosRepository.save(usuario);
@@ -157,9 +170,23 @@ export class UsuariosService {
   }
 
   async listarPorTipo(tipo: TipoUsuario): Promise<Usuario[]> {
-    return this.usuariosRepository.find({
+    const usuarios = await this.usuariosRepository.find({
       where: { tipo },
       select: ['id', 'nome', 'email', 'tipo', 'fotoPerfil', 'telefone', 'endereco', 'biografia']
+    });
+
+    // Formata o tipo para exibição, mas mantém o tipo original no objeto
+    return usuarios.map(usuario => {
+      const usuarioFormatado = { ...usuario };
+      usuarioFormatado.tipo = formatTipoUsuarioForDisplay(usuario.tipo) as unknown as TipoUsuario;
+      return usuarioFormatado;
+    });
+  }
+
+  async atualizarMediaAvaliacoes(usuarioId: number, media: number, total: number): Promise<void> {
+    await this.usuariosRepository.update(usuarioId, {
+      avaliacaoMedia: media,
+      totalAvaliacoes: total
     });
   }
 } 

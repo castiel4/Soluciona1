@@ -1,6 +1,8 @@
-import { IsString, IsNumber, IsArray, IsNotEmpty, Length, Min, Max, Matches, ArrayMaxSize, IsEnum, IsUrl, IsOptional } from 'class-validator';
+import { IsString, IsNumber, IsArray, IsNotEmpty, Length, Min, Max, Matches, ArrayMaxSize, IsUrl, IsOptional } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { CategoriaServico, SubcategoriaServico } from '../enums/categorias.enum';
+import { normalizeCategoria, normalizeSubcategoria } from '../helpers/normalize-categoria.helper';
 
 export class CreateServiceDto {
   @ApiProperty({
@@ -36,8 +38,9 @@ export class CreateServiceDto {
     enum: CategoriaServico,
     example: CategoriaServico.MANUTENCAO
   })
-  @IsEnum(CategoriaServico, { message: 'Categoria inválida' })
+  @IsString({ message: 'A categoria deve ser uma string' })
   @IsNotEmpty({ message: 'A categoria é obrigatória' })
+  @Transform(({ value }) => normalizeCategoria(value))
   categoria: CategoriaServico;
 
   @ApiProperty({
@@ -46,15 +49,19 @@ export class CreateServiceDto {
     example: SubcategoriaServico.AR_CONDICIONADO,
     required: false
   })
-  @IsEnum(SubcategoriaServico, { message: 'Subcategoria inválida' })
+  @IsString({ message: 'A subcategoria deve ser uma string' })
+  @IsOptional()
+  @Transform(({ value }) => value ? normalizeSubcategoria(value) : undefined)
   subcategoria: SubcategoriaServico;
 
   @ApiProperty({
     description: 'URLs das fotos do serviço',
-    example: ['http://exemplo.com/foto1.jpg']
+    example: ['http://exemplo.com/foto1.jpg'],
+    required: false
   })
+  @IsOptional()
   @IsArray({ message: 'As fotos devem ser um array de URLs' })
   @IsUrl({}, { each: true, message: 'Cada foto deve ser uma URL válida' })
   @ArrayMaxSize(5, { message: 'Máximo de 5 fotos permitidas' })
-  fotos: string[];
+  fotos?: string[];
 } 
